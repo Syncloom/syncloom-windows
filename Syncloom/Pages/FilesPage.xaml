@@ -1,0 +1,53 @@
+<Page x:Class="Syncloom.Pages.FilesPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Grid Padding="24,16,24,0" RowSpacing="12">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <Button x:Name="BackButton" Click="Back_Click" Visibility="Collapsed" Margin="0,0,12,0">
+                <FontIcon Glyph="&#xE72B;" />
+            </Button>
+            <TextBlock x:Name="TitleText" Grid.Column="1" Style="{StaticResource TitleTextBlockStyle}" VerticalAlignment="Center" />
+            <CommandBar x:Name="Commands" Grid.Column="2" DefaultLabelPosition="Right" Background="Transparent">
+                <AppBarButton Icon="NewFolder" Label="New folder" Click="NewFolder_Click" />
+                <AppBarButton Icon="Upload" Label="Upload" Click="Upload_Click" />
+                <AppBarButton Icon="Refresh" Label="Refresh" Click="Refresh_Click" />
+            </CommandBar>
+        </Grid>
+        <ListView x:Name="List" Grid.Row="1" SelectionMode="Single" IsItemClickEnabled="True" ItemClick="List_ItemClick">
+            <ListView.ItemTemplate>
+                <DataTemplate x:DataType="local:Row" xmlns:local="using:Syncloom.Pages">
+                    <Grid Padding="4,10" ColumnSpacing="14">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <FontIcon Glyph="{x:Bind Glyph}" FontSize="22" Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}" />
+                        <StackPanel Grid.Column="1">
+                            <TextBlock Text="{x:Bind Name}" />
+                            <TextBlock Text="{x:Bind Detail}" Opacity="0.6" Style="{StaticResource CaptionTextBlockStyle}" />
+                        </StackPanel>
+                        <StackPanel Grid.Column="2" Orientation="Horizontal">
+                            <Button Content="Download" Visibility="{x:Bind CanDownload}" Click="Download_Click" Tag="{x:Bind Id}" />
+                            <Button Content="Restore" Visibility="{x:Bind IsTrashVisible}" Click="Restore_Click" Tag="{x:Bind Id}" />
+                            <Button Visibility="{x:Bind CanWrite}" Click="Delete_Click" Tag="{x:Bind Id}" Margin="6,0,0,0">
+                                <FontIcon Glyph="&#xE74D;" FontSize="14" />
+                            </Button>
+                        </StackPanel>
+                    </Grid>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
+        <TextBlock x:Name="EmptyText" Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center" Opacity="0.6" Visibility="Collapsed" />
+        <InfoBar x:Name="Info" Grid.Row="1" VerticalAlignment="Bottom" IsOpen="False" Severity="Error" />
+    </Grid>
+</Page>

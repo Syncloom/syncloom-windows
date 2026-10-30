@@ -1,0 +1,52 @@
+<Page x:Class="Syncloom.Pages.SignInPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <ScrollViewer>
+        <StackPanel MaxWidth="420" Spacing="14" Padding="24,40" HorizontalAlignment="Center">
+            <Image Source="/Assets/StoreLogo.png" Width="84" Height="84" HorizontalAlignment="Center" />
+            <TextBlock x:Name="Heading" Style="{StaticResource TitleLargeTextBlockStyle}" HorizontalAlignment="Center" TextAlignment="Center" />
+            <TextBlock x:Name="Sub" Opacity="0.7" TextWrapping="Wrap" TextAlignment="Center" HorizontalAlignment="Center" />
+
+            <StackPanel x:Name="CredentialsPanel" Spacing="12">
+                <TextBox x:Name="Server" Header="Server" PlaceholderText="sync.example.com" />
+                <TextBox x:Name="Username" Header="Username" />
+                <PasswordBox x:Name="Password" Header="Password" KeyDown="Password_KeyDown" />
+                <TextBox x:Name="Invite" Header="Invite code" Visibility="Collapsed" />
+                <Button x:Name="Go" Content="Sign in" Style="{StaticResource AccentButtonStyle}" HorizontalAlignment="Stretch" Click="Go_Click" />
+                <HyperlinkButton x:Name="Toggle" Content="Create an account with an invite" HorizontalAlignment="Center" Click="Toggle_Click" />
+            </StackPanel>
+
+            <StackPanel x:Name="MfaPanel" Spacing="12" Visibility="Collapsed">
+                <TextBox x:Name="Code" Header="6-digit code" HorizontalContentAlignment="Center" FontSize="22" MaxLength="12" TextChanged="Code_TextChanged" />
+                <ToggleSwitch x:Name="UseRecovery" Header="Use a recovery code instead" />
+                <Button Content="Verify" Style="{StaticResource AccentButtonStyle}" HorizontalAlignment="Stretch" Click="Verify_Click" />
+            </StackPanel>
+
+            <StackPanel x:Name="KeyPanel" Spacing="12" Visibility="Collapsed">
+                <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" CornerRadius="8" Padding="16">
+                    <TextBlock x:Name="KeyText" FontFamily="Consolas" FontSize="16" TextAlignment="Center" IsTextSelectionEnabled="True" />
+                </Border>
+                <Button Content="Copy" HorizontalAlignment="Center" Click="CopyKey_Click" />
+                <CheckBox x:Name="Ack" Content="I have stored it somewhere safe" HorizontalAlignment="Center" />
+                <Button Content="Continue" Style="{StaticResource AccentButtonStyle}" HorizontalAlignment="Stretch" Click="KeyContinue_Click" IsEnabled="{x:Bind Ack.IsChecked.Value, Mode=OneWay}" />
+            </StackPanel>
+
+            <StackPanel x:Name="TotpPanel" Spacing="12" Visibility="Collapsed">
+                <Image x:Name="Qr" Width="200" Height="200" HorizontalAlignment="Center" />
+                <TextBlock x:Name="Secret" FontFamily="Consolas" TextAlignment="Center" IsTextSelectionEnabled="True" />
+                <TextBox x:Name="TotpCode" Header="6-digit code" HorizontalContentAlignment="Center" FontSize="22" />
+                <Button Content="Verify and continue" Style="{StaticResource AccentButtonStyle}" HorizontalAlignment="Stretch" Click="TotpConfirm_Click" />
+            </StackPanel>
+
+            <StackPanel x:Name="CodesPanel" Spacing="12" Visibility="Collapsed">
+                <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" CornerRadius="8" Padding="16">
+                    <TextBlock x:Name="CodesText" FontFamily="Consolas" TextAlignment="Center" IsTextSelectionEnabled="True" />
+                </Border>
+                <Button Content="Open my files" Style="{StaticResource AccentButtonStyle}" HorizontalAlignment="Stretch" Click="OpenFiles_Click" />
+            </StackPanel>
+
+            <TextBlock x:Name="Error" Foreground="{ThemeResource SystemFillColorCriticalBrush}" TextWrapping="Wrap" TextAlignment="Center" />
+            <ProgressRing x:Name="Busy" IsActive="False" />
+        </StackPanel>
+    </ScrollViewer>
+</Page>
