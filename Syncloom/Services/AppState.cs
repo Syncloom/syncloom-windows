@@ -1,4 +1,5 @@
 using System.Text.Json.Nodes;
+using Syncloom.CloudFiles;
 
 namespace Syncloom.Services;
 
@@ -42,32 +43,35 @@ public static class AppState
 
     public static void SignOut()
     {
+        StopCloud();
+        if (Saved is { } s) _ = CloudFilesRegistration.UnregisterAsync(s.Username);
         _ = Native.InvokeAsync("close", new { handle = Handle });
         SessionStore.Clear();
         Handle = 0;
         Saved = null;
     }
 
-    private static CancellationTokenSource? _sync;
+    /// <summary>The on-demand files of this account (placeholders in the sync folder).</summary>
+    public static CloudSession? Cloud;
+    public static string SyncStatus { get; private set; } = "Starting…";
+    public static event Action<string>? SyncStatusChanged;
 
-    /// <summary>Keeps the folder in sync: one reconciliation pass every 30 seconds.</summary>
-    public static void StartFolderSync(Action<string> onResult)
+    /// <summary>Connects the registered sync folder and starts mirroring the server into it. Files download when they are opened.</summary>
+    public static void StartCloud()
     {
-        _sync?.Cancel();
-        _sync = new CancellationTokenSource();
-        var ct = _sync.Token;
-        _ = Task.Run(async () =>
-        {
-            while (!ct.IsCancellationRequested)
-            {
-                try
-                {
-                    var r = await CallAsync("sync_once", new { root = Saved!.SyncFolder, device = Device, state_db = SessionStore.StateDb });
-                    onResult($"Synced: {r!["uploaded"]!.AsArray().Count} up, {r["downloaded"]!.AsArray().Count} down, {r["conflicts"]!.AsArray().Count} conflict copies");
-                }
-                catch (Exception e) { onResult(e.Message); }
-                try { await Task.Delay(TimeSpan.FromSeconds(30), ct); } catch (TaskCanceledException) { }
-            }
-        }, ct);
+        Cloud?.Dispose();
+        Cloud = CloudSession.Start(Saved!.SyncFolder, new CoreRemote(), Device, s => { SyncStatus = s; SyncStatusChanged?.Invoke(s); });
+    }
+
+    public static void ReportSyncError(string message)
+    {
+        SyncStatus = message;
+        SyncStatusChanged?.Invoke(message);
+    }
+
+    public static void StopCloud()
+    {
+        Cloud?.Dispose();
+        Cloud = null;
     }
 }

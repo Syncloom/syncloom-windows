@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- The placeholder sync logic. It has no Windows dependency, so it is unit-tested on any OS (see ../Syncloom.Sync.Tests). -->
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Version>0.1.2</Version>
+  </PropertyGroup>
+</Project>

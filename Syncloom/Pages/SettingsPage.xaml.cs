@@ -8,6 +8,7 @@ namespace Syncloom.Pages;
 public sealed partial class SettingsPage : Page
 {
     private MainWindow _window = null!;
+    private Action<string>? _onStatus;
 
     public SettingsPage() => InitializeComponent();
 
@@ -16,7 +17,9 @@ public sealed partial class SettingsPage : Page
         _window = (MainWindow)e.Parameter;
         User.Text = AppState.Saved?.Username;
         Server.Text = AppState.Saved?.Server;
-        Folder.Text = $"Sync folder: {AppState.Saved?.SyncFolder}";
+        Folder.Text = $"Sync folder: {AppState.Saved?.SyncFolder}\nStatus: {AppState.SyncStatus}";
+        _onStatus = s => DispatcherQueue.TryEnqueue(() => Folder.Text = $"Sync folder: {AppState.Saved?.SyncFolder}\nStatus: {s}");
+        AppState.SyncStatusChanged += _onStatus;
         try
         {
             var me = (await AppState.CallAsync("me"))!;
@@ -26,6 +29,12 @@ public sealed partial class SettingsPage : Page
                 .Select(m => $"{m!["name"]!.GetValue<string>()}   ·   {(m["kind"]!.GetValue<string>() == "webauthn" ? "Security key" : "Authenticator app")}").ToList();
         }
         catch (Exception ex) { Storage.Text = ex.Message; }
+    }
+
+    protected override void OnNavigatedFrom(NavigationEventArgs e)
+    {
+        if (_onStatus is not null) AppState.SyncStatusChanged -= _onStatus;
+        _onStatus = null;
     }
 
     private void SignOut_Click(object sender, RoutedEventArgs e)

@@ -2,14 +2,14 @@
 
 Native Windows client: **WinUI 3** (Fluent, Mica) on the Windows App SDK, calling the shared Rust core through a small C ABI.
 
-> **Status: public preview.** Built and run on Windows 11 on ARM64. The x64 build has not been tried.
+> **Status: public preview.** The app built and ran on Windows 11 on ARM64 (0.1.1). **On-demand files (0.1.2) are written and unit-tested, but have not been run on Windows yet**: the sync logic is tested on any OS, the Cloud Files calls compile but need a first run. The x64 build has not been tried.
 
 ## What it does
 - Sign-in, registration, second factor (authenticator app, recovery codes) and enrolment, with the same flow as the other apps
 - File browser (Files, Shared with me, Trash): upload, download, new folder, delete/restore
-- Folder sync with the core's sync engine (`sync_once`), merge and conflict copies included
+- **On-demand files**: the sync folder shows everything on the server as placeholders. A file downloads and decrypts when you open it; "Free up space" in Explorer drops the local copy again
 - Keys kept DPAPI-encrypted in `%LOCALAPPDATA%\Syncloom`
-- Registers the sync folder as a Windows sync root (Explorer entry). On-demand placeholders (Cloud Files API hydration callbacks) are the next step
+- Registers the sync folder as a Windows sync root (Explorer entry with status icons)
 
 ## Build (on Windows)
 Needs Rust, the .NET SDK and Visual Studio with the C++ tools. These steps build for the machine's own architecture, shown here for ARM64. On x64, use `x64` and `win-x64` in the last command.
@@ -34,3 +34,25 @@ dotnet build -c Release -p:Platform=ARM64 -r win-arm64
 
 ## The C ABI
 `syncloom_call(request_json) -> response_json` with `{ "op": "...", ... }`; responses are `{"ok": ...}` or `{"error": "..."}`. See `Services/Native.cs`.
+
+## On-demand files
+
+Three projects, so the logic can be tested without Windows:
+
+| Project | What |
+|---|---|
+| `Syncloom.Sync` | The engine (plain .NET): mirrors the server tree as placeholders, uploads what you create or edit, makes conflict copies, follows renames and deletes both ways. Talks to the server and the disk only through two small interfaces. |
+| `Syncloom.Sync.Tests` | xUnit tests with an in-memory server and disk. `dotnet test Syncloom.Sync.Tests` works on Windows, macOS and Linux. |
+| `Syncloom.CloudFiles` | The Windows part (Cloud Files API through CsWin32): creates and updates placeholders, answers the hydration request when a file is opened, and asks the engine before Explorer deletes or renames a file. |
+
+Rebuild `syncloom_core.dll` for this version (`cargo build --release --features capi`, then copy it to `Syncloom\native\`): the engine uses the C ABI operations `upload_version`, `move_to` and `changes`, which older builds do not have.
+
+How it behaves:
+- **Opening a file** downloads it completely, decrypts it and hands it to Windows (policy "full"). Large files therefore take a moment on first open.
+- **New and edited files** in the folder are uploaded (a new version, or a new file). If both sides changed a file, your edit is kept as `name (conflict – device – date).ext`.
+- **Delete and rename in Explorer** go to the server (the trash and a rename or move). If the server refuses, Windows keeps the file.
+- **Changes on the server** show up within about ten seconds: new files as placeholders, edited ones dropped to a placeholder again (unless you edited them locally).
+- **Existing files** from the older plain-folder sync are recognised by name and size and become placeholders instead of being uploaded twice.
+- Files such as `~$*`, `*.tmp`, `desktop.ini` and `Thumbs.db` are never uploaded.
+
+Limits: a move on the server shows up as delete and create (the file has to be downloaded again); signing out unregisters the sync root and leaves the folder with empty placeholders; a file that Explorer or another app has open cannot be dropped to a placeholder until it is closed.

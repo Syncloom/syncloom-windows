@@ -2,6 +2,19 @@
 
 All notable changes to this project are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [semantic versioning](https://semver.org/). Syncloom is a public preview until 1.0.
 
+## [Unreleased]
+
+### Added
+- On-demand files: the sync folder holds placeholders for everything on the server. Opening a file downloads and decrypts it. Local changes, deletes and renames in Explorer are sent to the server, conflicts become copies, and server changes appear as placeholders. See the README.
+- `Syncloom.Sync` (the engine, unit-tested on any OS) and `Syncloom.CloudFiles` (the Cloud Files API calls).
+
+### Changed
+- The folder sync no longer uses the core's `sync_once`.
+
+### Known limits
+- The Cloud Files part has not been run on Windows yet.
+- A file is downloaded completely on first open.
+
 ## [0.1.1] - 2026-11-02
 
 First version built and run on Windows (Windows 11 on ARM64).

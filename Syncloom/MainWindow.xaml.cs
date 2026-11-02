@@ -29,8 +29,17 @@ public sealed partial class MainWindow : Window
         AuthFrame.Visibility = Visibility.Collapsed;
         Nav.Visibility = Visibility.Visible;
         ContentFrame.Navigate(typeof(FilesPage), new FilesPage.Args(null, "Files", false));
-        _ = CloudFilesRegistration.RegisterAsync(AppState.Saved!.SyncFolder, AppState.Saved.Username).ContinueWith(_ => { });
-        AppState.StartFolderSync(_ => { });
+        _ = StartCloudAsync();
+    }
+
+    private static async Task StartCloudAsync()
+    {
+        try
+        {
+            await CloudFilesRegistration.RegisterAsync(AppState.Saved!.SyncFolder, AppState.Saved.Username);
+            AppState.StartCloud();
+        }
+        catch (Exception e) { AppState.ReportSyncError(e.Message); }
     }
 
     public void ShowSignIn()

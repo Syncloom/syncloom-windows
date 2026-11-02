@@ -1,0 +1,12 @@
+CfConnectSyncRoot
+CfDisconnectSyncRoot
+CfExecute
+CfCreatePlaceholders
+CfUpdatePlaceholder
+CfConvertToPlaceholder
+CfOpenFileWithOplock
+CfCloseHandle
+CfGetPlaceholderInfo
+CfReportProviderProgress
+CfSetInSyncState
+CreateFile
