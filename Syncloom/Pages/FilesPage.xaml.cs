@@ -102,7 +102,7 @@ public sealed partial class FilesPage : Page
         await Guard(async () =>
         {
             foreach (var f in files)
-                await AppState.CallAsync("upload_new_file", new { parent = _here.Parent, name = f.Name, path = f.Path, mtime_ms = new DateTimeOffset((await f.GetBasicPropertiesAsync()).DateModified).ToUnixTimeMilliseconds() });
+                await AppState.CallAsync("upload_new_file", new { parent = _here.Parent, name = f.Name, path = f.Path, mtime_ms = (await f.GetBasicPropertiesAsync()).DateModified.ToUnixTimeMilliseconds() });
         });
     }
 
