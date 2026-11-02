@@ -108,6 +108,18 @@ public class EngineTests
     }
 
     [Fact]
+    public void A_plain_file_with_the_same_name_and_size_but_other_content_is_never_taken_for_synced()
+    {
+        _remote.AddFile(null, "report.txt", "server version");
+        _fs.Plain("report.txt", "my own version"); // both are 14 characters long
+        Assert.Equal(_remote.Nodes.Values.Single().Size, _fs.Items["report.txt"].Size);
+        Sync();
+        Assert.Equal(["report (conflict – laptop – 2026-11-02).txt", "report.txt"], _remote.Nodes.Values.Select(n => n.Name).OrderBy(x => x).ToList());
+        Assert.Equal("my own version", _remote.Content[_remote.Nodes.Values.Single(n => n.Name.Contains("conflict")).Id]);
+        Assert.Equal("server version", _remote.Content[_remote.Nodes.Values.Single(n => n.Name == "report.txt").Id]);
+    }
+
+    [Fact]
     public void A_plain_file_that_differs_from_the_server_becomes_a_conflict_copy()
     {
         _remote.AddFile(null, "a.txt", "server");

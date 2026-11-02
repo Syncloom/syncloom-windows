@@ -45,14 +45,14 @@ Three projects, so the logic can be tested without Windows:
 | `Syncloom.Sync.Tests` | xUnit tests with an in-memory server and disk. `dotnet test Syncloom.Sync.Tests` works on Windows, macOS and Linux. |
 | `Syncloom.CloudFiles` | The Windows part (Cloud Files API through CsWin32): creates and updates placeholders, answers the hydration request when a file is opened, and asks the engine before Explorer deletes or renames a file. |
 
-Rebuild `syncloom_core.dll` for this version (`cargo build --release --features capi`, then copy it to `Syncloom\native\`): the engine uses the C ABI operations `upload_version`, `move_to` and `changes`, which older builds do not have.
+Rebuild `syncloom_core.dll` for this version (`cargo build --release --features capi`, then copy it to `Syncloom\native\`): the engine uses the C ABI operations `upload_version`, `move_to`, `changes`, `versions` and `hash_file`, which older builds do not have.
 
 How it behaves:
 - **Opening a file** downloads it completely, decrypts it and hands it to Windows (policy "full"). Large files therefore take a moment on first open.
 - **New and edited files** in the folder are uploaded (a new version, or a new file). If both sides changed a file, your edit is kept as `name (conflict – device – date).ext`.
 - **Delete and rename in Explorer** go to the server (the trash and a rename or move). If the server refuses, Windows keeps the file.
 - **Changes on the server** show up within about ten seconds: new files as placeholders, edited ones dropped to a placeholder again (unless you edited them locally).
-- **Existing files** from the older plain-folder sync are recognised by name and size and become placeholders instead of being uploaded twice.
+- **Existing files** from the older plain-folder sync become placeholders when their content hash equals the server version, so nothing is uploaded twice. A file with the same name but other content (even of the same size) is never taken for synced: it is uploaded as a conflict copy.
 - Files such as `~$*`, `*.tmp`, `desktop.ini` and `Thumbs.db` are never uploaded.
 
 Limits: a move on the server shows up as delete and create (the file has to be downloaded again); signing out unregisters the sync root and leaves the folder with empty placeholders; a file that Explorer or another app has open cannot be dropped to a placeholder until it is closed.

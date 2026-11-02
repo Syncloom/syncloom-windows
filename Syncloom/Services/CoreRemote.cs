@@ -30,6 +30,11 @@ public sealed class CoreRemote : IRemote
 
     public long ChangesHead() => Call("changes_head")!.GetValue<long>();
 
+    public string? ContentHash(string id, string? version) =>
+        version is null ? null : Call("versions", new { id })!.AsArray().FirstOrDefault(v => v!["id"]!.GetValue<string>() == version)?["content_hash"]?.GetValue<string>();
+
+    public string HashFile(string path) => Call("hash_file", new { path })!.GetValue<string>();
+
     public IReadOnlyList<RemoteNode> List(string? parentId) => Call("list", new { parent = parentId })!.AsArray()
         .Select(n => n!)
         .Where(n => n["deleted"]?.GetValue<bool>() != true)

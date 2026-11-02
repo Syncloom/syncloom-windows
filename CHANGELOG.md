@@ -6,6 +6,7 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ### Added
 - On-demand files: the sync folder holds placeholders for everything on the server. Opening a file downloads and decrypts it. Local changes, deletes and renames in Explorer are sent to the server, conflicts become copies, and server changes appear as placeholders. See the README.
+- Existing files in the sync folder are only taken for synced when their content hash matches the server version, not just name and size. Different content becomes a conflict copy.
 - `Syncloom.Sync` (the engine, unit-tested on any OS) and `Syncloom.CloudFiles` (the Cloud Files API calls).
 
 ### Changed

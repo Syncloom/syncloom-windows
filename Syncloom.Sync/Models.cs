@@ -27,6 +27,10 @@ public sealed class RemoteException(RemoteError kind, string message) : Exceptio
 public interface IRemote
 {
     long ChangesHead();
+    /// <summary>The content hash (BLAKE3 of the plaintext) of a version, or null when it is not known.</summary>
+    string? ContentHash(string id, string? version);
+    /// <summary>The same hash for a local file, computed by the core. Equal hashes mean equal content.</summary>
+    string HashFile(string path);
     /// <summary>Children of a folder (null is the root), without deleted ones.</summary>
     IReadOnlyList<RemoteNode> List(string? parentId);
     RemoteNode Get(string id);

@@ -89,6 +89,17 @@ public sealed class SyncEngine(IRemote remote, ILocalFs fs, string device, Func<
         }
     }
 
+    /// <summary>Only a matching content hash makes a local file "the same": name and size alone can hide different content, which a later update would overwrite.</summary>
+    private bool SameContent(string rel, RemoteNode n)
+    {
+        try
+        {
+            var remoteHash = remote.ContentHash(n.Id, n.Version);
+            return remoteHash is not null && remoteHash == remote.HashFile(fs.FullPath(rel));
+        }
+        catch { return false; } // cannot tell (locked file, offline): treat as different, the push step keeps both
+    }
+
     private bool IsStale(string path) { lock (_stale) return _stale.Contains(path); }
 
     private bool OnlySynced(string rel) =>
@@ -122,7 +133,7 @@ public sealed class SyncEngine(IRemote remote, ILocalFs fs, string device, Func<
         {
             var samePath = Join(rel, same.Name);
             if (same.IsDirectory && n.IsFolder) { Own(samePath, () => fs.Bind(samePath, n)); r.Adopted++; PullDir(n.Id, samePath, r); }
-            else if (!same.IsDirectory && !n.IsFolder && same.Size == n.Size) { Own(samePath, () => fs.Bind(samePath, n)); r.Adopted++; } // a file the older plain-folder sync already put here
+            else if (!same.IsDirectory && !n.IsFolder && same.Size == n.Size && SameContent(samePath, n)) { Own(samePath, () => fs.Bind(samePath, n)); r.Adopted++; } // a file the older plain-folder sync already put here: same bytes, not just same name and size
             // anything else differs from the server: the push step turns the local one into a conflict copy
             return;
         }

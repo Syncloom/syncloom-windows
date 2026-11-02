@@ -39,6 +39,8 @@ public sealed class FakeRemote : IRemote
     private RemoteNode Find(string id) => Nodes.TryGetValue(id, out var n) ? n : throw new RemoteException(RemoteError.NotFound, "not found");
 
     public long ChangesHead() => Head;
+    public string? ContentHash(string id, string? version) => Content.GetValueOrDefault(id); // the fake "hash" is the content itself
+    public string HashFile(string path) => File.ReadAllText(path);
     public IReadOnlyList<RemoteNode> List(string? parentId) => FailList ? throw new IOException("offline") : Children(parentId).ToList();
     public RemoteNode Get(string id) => Find(id);
     public RemoteNode CreateFolder(string? parentId, string name) { Calls.Add($"folder {name}"); CheckFree(parentId, name); return AddFolder(parentId, name); }
